@@ -1,31 +1,28 @@
 package com.tranthanhdat.appmusic;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.chibde.visualizer.BarVisualizer;
 import com.chibde.visualizer.CircleBarVisualizer;
-import com.chibde.visualizer.CircleVisualizer;
+import com.jgabrielfreitas.core.BlurImageView;
 import com.mikhaellopez.circularimageview.CircularImageView;
-import com.tranthanhdat.appmusic.com.tranthanhdat.appmusic.ultils.MusicUtils;
+import com.tranthanhdat.appmusic.com.tranthanhdat.appmusic.ultils.MusicUltils;
 
 import java.io.File;
 import java.io.IOException;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,11 +33,12 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv_songCurrentDuration,tv_songTotalDuration;
     private CircularImageView image;
     private CircleBarVisualizer circleBarVisualizer;
+    private BlurImageView blurImageView;
     //Mediaplay
     private MediaPlayer mediaPlayer;
     private Handler mhandler=new Handler();
 
-    private MusicUtils musicUtils;
+    private MusicUltils musicUtils;
 
     public static final int MY_REQUEST_CODE = 100;
     public static final int AUDIO_PERMISSION_REQUEST_CODE = 102;
@@ -64,31 +62,44 @@ public class MainActivity extends AppCompatActivity {
 
     private void doStart() {
         int duration = this.mediaPlayer.getDuration();
+        tv_songTotalDuration.setText(musicUtils.milliSecondToTime(duration));
         if(!mediaPlayer.isPlaying()){
             mediaPlayer.start();
         }
     }
 
     private void setComponents() {
-
         //get URI from intent
         // Intent truyền sang.
         Intent intent = this.getIntent();
         this.URI= intent.getStringExtra("URI");
         Uri myUri1 = Uri.fromFile(new File(URI));
 
+        //get componet to activity .xml
         parent_view=findViewById(R.id.parent_view);
         seek_barProgress=findViewById(R.id.seek_aong_progessbar);
         btn_play=findViewById(R.id.btn_play);
-
         tv_songCurrentDuration=findViewById(R.id.tv_song_current_duration);
         tv_songTotalDuration=findViewById(R.id.total_duration);
-
         image=findViewById(R.id.image);
+        blurImageView=findViewById(R.id.background_blur);
 
-       /* circleBarVisualizer= findViewById(R.id.visualizer);*/
+        //blurImage
+        blurImageView.setBlur(5);
 
-        // init mediaplyer
+        musicUtils=new MusicUltils();
+        //init mediaplayer
+        setPlayer();
+    }
+
+    public void controlClick(View view) {
+    }
+
+    private void requestStoragePermission() {
+        ActivityCompat.requestPermissions(this,storagePermission,AUDIO_PERMISSION_REQUEST_CODE);
+    }
+
+    private void setPlayer(){
         mediaPlayer=new MediaPlayer();
 
         try {
@@ -105,34 +116,12 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-        //Đọc file nhạc
-        /*
-        *
-        *
-        *
-        *
-        *
-        * */
-
-    /*    // set custom color to the line.
-        circleBarVisualizer.setColor(ContextCompat.getColor(this, R.color.colorDarkDrange));
-
-        // Set you media player to the visualizer.
-        circleBarVisualizer.setPlayer(mediaPlayer.getAudioSessionId());*/
-        musicUtils=new MusicUtils();
 
         circleBarVisualizer = findViewById(R.id.visualizer);
+        // set custom color to the line.
         circleBarVisualizer.setColor(ContextCompat.getColor(this, R.color.colorDarkDrange));
-        circleBarVisualizer.setPlayer(mediaPlayer.getAudioSessionId());
-
+        // Set you media player to the visualizer.
+         circleBarVisualizer.setPlayer(mediaPlayer.getAudioSessionId());
     }
-
-    public void controlClick(View view) {
-    }
-
-    private void requestStoragePermission() {
-        ActivityCompat.requestPermissions(this,storagePermission,AUDIO_PERMISSION_REQUEST_CODE);
-    }
-
 
 }
